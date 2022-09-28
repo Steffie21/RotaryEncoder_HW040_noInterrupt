@@ -15,12 +15,16 @@ long newposition;
 long oldposition = 0;
 long newtime;
 long oldtime = 0;
-long vel;
-double pwmFactor = 0 ;
+float vel;
+float pwmFactor = 0 ;
+const int AVG_LENGTH = 10 ;
+int arrLength = 0 ;
+int arrIndex = 0 ;
+float arrVel[AVG_LENGTH] ;
 
 // Delay
 unsigned long update_ticker;
-unsigned long update_interval = 600L;
+unsigned long update_interval = 100L;
 
 // Serial Interupt
 String inputString = "";
@@ -45,13 +49,16 @@ void setup() {
 void loop()
 {
   if (stringComplete) {
-    pwmFactor = inputString.toDouble() ;
+    pwmFactor = inputString.toFloat() ;
     
     inputString = "";
     stringComplete = false;
     
     analogWrite(INT1, 255*pwmFactor) ;  
     analogWrite(INT2, 0) ; 
+
+    arrLength = 0; //Should not use the values in the array
+    arrIndex = 0; 
   }
 
   CLK_val = digitalRead(CLK);
@@ -71,8 +78,23 @@ void loop()
     newposition = encoderPosCount ;    
     newtime = millis();
     vel = (newposition-oldposition) * 1000 /(newtime-oldtime);
+    
+    if (arrIndex >= AVG_LENGTH)
+      arrIndex = 0;
+    if (arrLength < AVG_LENGTH)
+      arrLength++ ;      
+    arrVel[arrIndex++] = vel ;      
     // Serial.print("vel=");
-    Serial.println(vel);
+    // Serial.println(Vel);
+    float sum = 0 ;
+    for(int i = 0; i < arrLength; i++) {
+      sum += arrVel[i] ;
+      // Serial.print(arrVel[i]);
+      // Serial.print("\t");
+    }
+    // Serial.println("");
+    Serial.println(sum/arrLength);
+
     
     oldposition = newposition;
     oldtime = newtime;
