@@ -1,3 +1,11 @@
+// Author: Stefan Oberholzer
+// Last Modified: 29 September 2022
+// MCU: ESP32 Dev Module {Dis die board wat jy moet select in die boards menu.}
+
+// Change AVG_LENGHT om die average te verander, dan stel net update_interval ook om 
+// te se hoeveel keer die vel (speed) measurement geneem moet word
+// Kan die gebruik om n meer smooth curve te kry.
+
 // Pins
 int CLK = 26; 
 int DT = 27;  
@@ -74,32 +82,25 @@ void loop()
   CLK_last = CLK_val;
 
   if (millis() - update_ticker > update_interval){ // Instead of delay
-    // Serial.println(millis()) ;  
     newposition = encoderPosCount ;    
     newtime = millis();
-    vel = (newposition-oldposition) * 1000 /(newtime-oldtime);
+    vel = (newposition-oldposition) * 1000 /(newtime-oldtime)*2; // Unit = [RPM]
     
     if (arrIndex >= AVG_LENGTH)
       arrIndex = 0;
     if (arrLength < AVG_LENGTH)
       arrLength++ ;      
-    arrVel[arrIndex++] = vel ;      
-    // Serial.print("vel=");
-    // Serial.println(Vel);
+    arrVel[arrIndex++] = vel ; 
     float sum = 0 ;
     for(int i = 0; i < arrLength; i++) {
       sum += arrVel[i] ;
-      // Serial.print(arrVel[i]);
-      // Serial.print("\t");
     }
-    // Serial.println("");
     Serial.println(sum/arrLength);
 
     
     oldposition = newposition;
     oldtime = newtime;
 		update_ticker = millis();
-    // Serial.println(millis()) ;  
   }
 }
 
